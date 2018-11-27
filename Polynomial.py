@@ -25,18 +25,13 @@ print(polynomial)
 
 
 def find_basis(relation_dict={x**2:a, y**3:b*x, z**4:x*y}):
-    monomials = []
-    for item in relation_dict:
-        monomials.append(item)
-    print(monomials)
+    # #extract variables from relation_dict
+    monomials = extract_variables(relation_dict)
 
-    base = 1
-    for monomial in monomials:
-        base = base*monomial
-    print(base)
-    polynomial = base.copy()
-    print(polynomial.free_symbols)
+    #Multiply variables together (to use free_symbols)
+    polynomial = construct_poly(monomials)
 
+    #Construct a grand_list consist of each symbol's legit basis
     grand_list = []
     for symbol in polynomial.free_symbols:
         variable_sub_list = []
@@ -46,39 +41,30 @@ def find_basis(relation_dict={x**2:a, y**3:b*x, z**4:x*y}):
         grand_list.append(variable_sub_list)
     print(grand_list)
 
+    #Find all combination within grand_list, and construct final basis_list
     final_list = []
-    basis_list = list(itertools.product(*grand_list))
-    print(basis_list)
-    for sub_basis in basis_list:
+    combinations = list(itertools.product(*grand_list))
+    for combination in combinations:
         base = 1
-        for symbol in sub_basis:
+        for symbol in combination:
             base = base*symbol
         final_list.append(base)
-    print(final_list)
-
-    # basis_list=[]
-    # for i in range(len(grand_list)):
-    #     current_list = grand_list[i]
-    #     for sub_basis in current_list:
-    #         print("sub_basis", sub_basis)
-    #     for j in range(i+1, len(grand_list)):
-    #         print("hi")
-
-
-
-
-    # basis_list = []
-    # for i in range(len(grand_list)):
-    #     this_list = grand_list[i]
-    #     other_lists = 
-    #     for monomial in this_list:
-
-
-    #         basis_list.append(a_basis)
-    # print(basis_list)
-    # for variable_sub_list in grand_list:
-    #     for monomial in variable_sub_list:
-    #         basis_list.append(monomial)
 
     return final_list
-    
+
+#helper method used in find_basis
+def extract_variables(relation_dict):
+    #extract variables from relation_dict
+    monomials = []
+    for item in relation_dict:
+        monomials.append(item)
+    # print(monomials)
+    return monomials
+#helper method used in find_basis
+def construct_poly(variable_list):
+    #Multiply variables together (to use free_symbols)
+    base = 1
+    for monomial in variable_list:
+        base = base*monomial
+    polynomial = base.copy()
+    return polynomial
