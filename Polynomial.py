@@ -1,85 +1,84 @@
 # Use sympy to perform symbolic operation
 # from sympy import *
 import sympy as sym
+import itertools
 
 x = sym.symbols('x')
 a = sym.symbols('a', integer=True)
 y = sym.symbols('y')
 b = sym.symbols('b', integer=True)
 z = sym.symbols('z')
-poly4 = ((2*x+y)**3)*(x*y**2)*z**4
-print('poly4 is', poly4)
-poly4 = sym.expand(poly4)
-print('expand is', poly4)
-
-# substitute_x = [(x**i, y*a*x**(i-2)) for i in range(10) if i >= 2]
-
-# substitute_y = [(y**i, (x**2)*b*y**(i-3)) for i in range(10) if i >= 3]
-# substitute_z = [(z**i, y*x*z**(i-1)) for i in range(10) if i >= 1]
-# print(sym.degree(poly4,gen=x))
-# while any(str(term[0]) in str(poly4) for term in substitute_x) or \
-# any(str(term[0]) in str(poly4) for term in substitute_y) or \
-# any(str(term[0]) in str(poly4) for term in substitute_z):
-#     poly4 = poly4.subs([(x**i, y*a*x**(i-2)) for i in range(sym.degree(poly4, gen=x)+1) if i >= 2])
-#     poly4 = poly4.subs([(y**i, (x**2)*b*y**(i-3)) for i in range(sym.degree(poly4, gen=y)+1) if i >= 3])
-#     poly4 = poly4.subs([(z**i, y*x*z**(i-1)) for i in range(sym.degree(poly4, gen=y)+1) if i >= 1])
-# print(poly4)
-
-
-while sym.degree(poly4, gen=x) >= 2 or \
-        sym.degree(poly4, gen=y) >= 3 or \
-        sym.degree(poly4, gen=z) >=1:
-    poly4 = poly4.subs([(x**i, y*a*x**(i-2)) for i in range(sym.degree(poly4, gen=x)+1) if i >= 2])
-    poly4 = poly4.subs([(y**i, (x**2)*b*y**(i-3)) for i in range(sym.degree(poly4, gen=y)+1) if i >= 3])
-    poly4 = poly4.subs([(z**i, y*x*z**(i-1)) for i in range(sym.degree(poly4, gen=y)+1) if i >= 1])
-print(poly4)
+polynomial = ((2*x+y)**3)*(x*y**2)*z**4
+print('polynomial is', polynomial)
+polynomial = sym.expand(polynomial)
+print('expand is', polynomial)
 
 
 
+while sym.degree(polynomial, gen=x) >= 2 or \
+        sym.degree(polynomial, gen=y) >= 3 or \
+        sym.degree(polynomial, gen=z) >=1:
+    polynomial = polynomial.subs([(x**i, y*a*x**(i-2)) for i in range(sym.degree(polynomial, gen=x)+1) if i >= 2])
+    polynomial = polynomial.subs([(y**i, (x**2)*b*y**(i-3)) for i in range(sym.degree(polynomial, gen=y)+1) if i >= 3])
+    polynomial = polynomial.subs([(z**i, y*x*z**(i-1)) for i in range(sym.degree(polynomial, gen=y)+1) if i >= 1])
+print(polynomial)
 
-def find_basis(polynomial=0,relation_list=[]):
-    # degree_list = []
-    # degree_x = sym.degree(x**2-a, gen=x)
-    # degree_y = sym.degree(y**3-b*x, gen=y)
-    # # degree_z = sym.degree(polynomial, gen=z)
-    # degree_list.append(degree_x)
-    # degree_list.append(degree_y)
-    # # degree_list.append(degree_z)
-    # for i in range(len(degree_list)):
-    #     if degree_list[i] != 0:
-    #         degree_list[i] = degree_list[i] - 1
-    # print(degree_list)
+
+def find_basis(relation_dict={x**2:a, y**3:b*x, z**4:x*y}):
+    monomials = []
+    for item in relation_dict:
+        monomials.append(item)
+    print(monomials)
+
+    base = 1
+    for monomial in monomials:
+        base = base*monomial
+    print(base)
+    polynomial = base.copy()
+    print(polynomial.free_symbols)
+
+    grand_list = []
+    for symbol in polynomial.free_symbols:
+        variable_sub_list = []
+        variable_sub_list.append(symbol**0)
+        while sym.degree(variable_sub_list[len(variable_sub_list)-1], gen=symbol) < sym.degree(polynomial, gen=symbol)-1:
+            variable_sub_list.append(variable_sub_list[len(variable_sub_list)-1]*symbol)
+        grand_list.append(variable_sub_list)
+    print(grand_list)
+
+    final_list = []
+    basis_list = list(itertools.product(*grand_list))
+    print(basis_list)
+    for sub_basis in basis_list:
+        base = 1
+        for symbol in sub_basis:
+            base = base*symbol
+        final_list.append(base)
+    print(final_list)
+
+    # basis_list=[]
+    # for i in range(len(grand_list)):
+    #     current_list = grand_list[i]
+    #     for sub_basis in current_list:
+    #         print("sub_basis", sub_basis)
+    #     for j in range(i+1, len(grand_list)):
+    #         print("hi")
+
+
 
 
     # basis_list = []
-    # basis_list.append(1)
-    # # basis_large = x**degree_list[0]*y**degree_list[1]
-    # # basis_list.append(basis_large)
-    # copied_list = degree_list.copy()
-    # while copied_list[1] > 0:
-    #     basis_list.append(x**copied_list[0]*y**copied_list[1])
-    #     copied_list[1] = copied_list[1] - 1
-    # basis_list.append(x**copied_list[0]*y**copied_list[1])
+    # for i in range(len(grand_list)):
+    #     this_list = grand_list[i]
+    #     other_lists = 
+    #     for monomial in this_list:
 
-    # copied_list = degree_list.copy()
-    # print(copied_list)
-    # while copied_list[0] > 0:
-    #     basis_list.append(x**copied_list[0]*y**copied_list[1])
-    #     copied_list[0] = copied_list[0] - 1
-    # basis_list.append(x**copied_list[0]*y**copied_list[1])
-    relation = x**2*y**3
-    list_x = [1]
-    list_y = [1]
-    while sym.degree(list_x[len(list_x)-1], gen=x) < sym.degree(relation, gen=x)-1:
-        list_x.append(list_x[len(list_x)-1]*x)
-    print('list_x',list_x)
-    while sym.degree(list_y[len(list_y)-1], gen=y) < sym.degree(relation, gen=y)-1:
-        list_y.append(list_y[len(list_y)-1]*y)
-    print('list_y', list_y)
 
-    list_final = []
-    for x_basis in list_x:
-        for y_basis in list_y:
-            list_final.append(x_basis*y_basis)
-    print('list_final', list_final)
-    return list_final
+    #         basis_list.append(a_basis)
+    # print(basis_list)
+    # for variable_sub_list in grand_list:
+    #     for monomial in variable_sub_list:
+    #         basis_list.append(monomial)
+
+    return final_list
+    
