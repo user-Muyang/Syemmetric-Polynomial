@@ -52,25 +52,31 @@ def replace(polynomial, relation_dict):
 
         polynomial = polynomial.subs(replace)
     return polynomial
-
+# [(x**i*y**j,z*x**(i-1)*y**(j-1)) for i in range(10) if i >=1 for j in range(10) if j >=1]
 
 
 def find_basis(relation_dict={x**2:a, y**3:b*x, z**4:x*y}):
-    # #extract variables from relation_dict
-    monomials = extract_variables(relation_dict)
+    single_var_basis_list = find_basis_single_var(relation_dict) #First find the basis of each symbol
+    
+    for basis in single_var_basis_list: #rule out multiples of the relations
+        for relation in relation_dict:
+            if is_factor(relation, basis):
+                single_var_basis_list.remove(basis)
+    final_list = single_var_basis_list
+    return final_list
 
-    #Multiply variables together (to use free_symbols)
-    substitution = construct_poly(monomials)
-
-    #Construct a grand_list consist of each symbol's legit basis
-    grand_list = []
+#helper method used in find basis
+#construct basis from single variable relations
+def find_basis_single_var(relation_dict):
+    monomials = extract_single_variable(relation_dict) #extract single variables from relation_dict
+    substitution = construct_poly(monomials) #Multiply variables together (to use free_symbols)
+    grand_list = [] #Construct a grand_list consist of each symbol's legit basis
     for symbol in substitution.free_symbols:
         variable_sub_list = []
         variable_sub_list.append(symbol**0)
         while sym.degree(variable_sub_list[len(variable_sub_list)-1], gen=symbol) < sym.degree(substitution, gen=symbol)-1:
             variable_sub_list.append(variable_sub_list[len(variable_sub_list)-1]*symbol)
         grand_list.append(variable_sub_list)
-    print(grand_list)
 
     #Find all combination within grand_list, and construct final basis_list
     final_list = []
@@ -80,9 +86,7 @@ def find_basis(relation_dict={x**2:a, y**3:b*x, z**4:x*y}):
         for symbol in combination:
             base = base*symbol
         final_list.append(base)
-
     return final_list
-
 #helper method used in find_basis
 def extract_variables(relation_dict):
     #extract variables from relation_dict
@@ -99,3 +103,18 @@ def construct_poly(variable_list):
         base = base*monomial
     polynomial = base.copy()
     return polynomial
+
+
+#extract single variables from relation_dict
+def extract_single_variable(relation_dict):
+    #extract variables from relation_dict
+    monomials = []
+    for key in relation_dict:
+        if len(key.free_symbols) == 1:
+            monomials.append(key)
+    return monomials
+def is_factor(monomial_1, monomial_2):
+    for symbol in monomial_1.free_symbols:
+        if not sym.degree(monomial_1, gen=symbol) <= sym.degree(monomial_2, gen=symbol):
+            return False
+    return True
