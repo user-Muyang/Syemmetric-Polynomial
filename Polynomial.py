@@ -53,7 +53,7 @@ def replace(polynomial, relation_dict):
         polynomial = polynomial.subs(replace)
     return polynomial
 # [(x**i*y**j,z*x**(i-1)*y**(j-1)) for i in range(10) if i >=1 for j in range(10) if j >=1]
-
+# Turn this to be more general
 
 def find_basis(relation_dict={x**2:a, y**3:b*x, z**4:x*y}):
     single_var_basis_list = find_basis_single_var(relation_dict) #First find the basis of each symbol
