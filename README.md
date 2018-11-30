@@ -1,2 +1,3 @@
-# Syemmetric-Polynomial
-if git works
+# Symmetric-Polynomial
+-substitution
+-find basis √
