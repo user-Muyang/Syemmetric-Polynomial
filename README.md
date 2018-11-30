@@ -1,3 +1,3 @@
 # Symmetric-Polynomial
--substitution
--find basis √
+  substitution
+  find basis
