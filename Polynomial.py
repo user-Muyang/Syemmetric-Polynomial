@@ -15,9 +15,6 @@ print('After expansion, the polynomial is', polynomial)
 
 
 def substitution(polynomial=sym.expand(((2*x+y)**3)*(x*y**2)*z**4), relation_dict={x**2:y*a, y**3:(x**2)*b, z**4:y*x}):
-    # monomials = extract_variables(relation_dict)
-    # substitute = construct_poly(monomials)
-
     while need_substitute(polynomial, relation_dict):
         # polynomial = replace(polynomial, relation_dict)
         for monomial in relation_dict:
@@ -31,8 +28,8 @@ def substitution(polynomial=sym.expand(((2*x+y)**3)*(x*y**2)*z**4), relation_dic
 #helper method used in substitution
 def need_substitute(polynomial, relation_dict):
     for monomial in relation_dict:
-        if isinstance(polynomial, sym.add.Add):
-            for arg in polynomial.args: #will this always be a polynomial?
+        if isinstance(polynomial, sym.add.Add): #if this polynomial has multiple terms added together
+            for arg in polynomial.args: #will this always be a 'poly'nomial?
                 if is_factor(monomial, arg):
                     return True
         else:
