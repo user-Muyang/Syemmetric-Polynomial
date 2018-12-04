@@ -14,6 +14,37 @@ polynomial = sym.expand(polynomial)
 print('After expansion, the polynomial is', polynomial)
 
 
+def build_matrix(polynomial,variable,relation_dict):
+    matrix = sym.Matrix()
+    basis_list=[1]
+    if len(relation_dict) != 0:
+        basis_list = find_basis(relation_dict)
+    # print(matrix,matrix.shape)
+    for basis in basis_list:
+        this_column_polynomial = polynomial*basis
+        this_column=[]
+        for basis in basis_list:
+            this_column_polynomial = substitution(sym.expand(this_column_polynomial),relation_dict)
+            # print(this_column_polynomial)
+            # print(polynomial,basis==1,isinstance(polynomial, sym.symbol.Symbol))
+            if basis == 1:
+                # coefficient = this_column_polynomial.coeff(variable,0) #Need to figure out a way to check constant term
+                #coefficient = constant_term(this_column_polynomial,variable)
+                coefficient = this_column_polynomial.coeff(variable,0)
+            # print(basis,coefficient)
+            else:
+                coefficient = this_column_polynomial.coeff(basis)
+            this_column.append(coefficient)
+            # print(this_column)
+        matrix = matrix.col_insert(matrix.shape[1], sym.Matrix(this_column)) #columns are added one at a time
+        # print(matrix,matrix.shape)
+    return matrix
+def constant_term(polynomial,variable):
+    if len(variable.free_symbols) > 1:
+        return polynomial.coeff(variable) #when there are multi variables, coeff(variable,0) acts weirdly
+    else: #only one variable
+        return polynomial.coeff(variable,0)
+
 def substitution(polynomial=sym.expand(((2*x+y)**3)*(x*y**2)*z**4), relation_dict={x**2:y*a, y**3:(x**2)*b, z**4:y*x}):
     while need_substitute(polynomial, relation_dict):
         # polynomial = replace(polynomial, relation_dict)
@@ -33,7 +64,8 @@ def need_substitute(polynomial, relation_dict):
                 if is_factor(monomial, arg):
                     return True
         else:
-            print('Polynomial has only one term')
+            #print('Polynomial has only one term',polynomial,monomial)
+
             if is_factor(monomial, polynomial):
                 return True
     return False
@@ -63,6 +95,7 @@ def find_basis(relation_dict={x**2:a, y**3:b*x, z**4:x*y}):
         for relation in relation_dict:
             if is_factor(relation, basis):
                 single_var_basis_list.remove(basis)
+
     final_list = single_var_basis_list
     return final_list
 
