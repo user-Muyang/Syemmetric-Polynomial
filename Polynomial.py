@@ -14,36 +14,45 @@ polynomial = sym.expand(polynomial)
 print('After expansion, the polynomial is', polynomial)
 
 
-def build_matrix(polynomial,variable,relation_dict):
+def build_matrix(polynomial,variable,relation_dict): #variables that are not in the base ring
     matrix = sym.Matrix()
     basis_list=[1]
-    if len(relation_dict) != 0:
-        basis_list = find_basis(relation_dict)
-    # print(matrix,matrix.shape)
+    dict_for_basis = dict()
+    for var in variable:
+        print('var',var)
+        for relation in relation_dict:
+            print('relation',relation)
+            if relation.free_symbols == var.free_symbols:
+                dict_for_basis.update({relation:relation_dict[relation]})
+    print(dict_for_basis)
+    if len(dict_for_basis) != 0:
+        basis_list = find_basis(dict_for_basis)
+    print(basis_list)
     for basis in basis_list:
         this_column_polynomial = polynomial*basis
         this_column=[]
         for basis in basis_list:
             this_column_polynomial = substitution(sym.expand(this_column_polynomial),relation_dict)
-            # print(this_column_polynomial)
+            print(this_column_polynomial)
             # print(polynomial,basis==1,isinstance(polynomial, sym.symbol.Symbol))
             if basis == 1:
                 # coefficient = this_column_polynomial.coeff(variable,0) #Need to figure out a way to check constant term
-                #coefficient = constant_term(this_column_polynomial,variable)
-                coefficient = this_column_polynomial.coeff(variable,0)
-            # print(basis,coefficient)
+                # coefficient = constant_term(this_column_polynomial,variable)
+                # coefficient = this_column_polynomial.coeff(a,0)
+                coefficient = constant_term(this_column_polynomial,variable)
             else:
                 coefficient = this_column_polynomial.coeff(basis)
+            print(basis,coefficient)
             this_column.append(coefficient)
             # print(this_column)
         matrix = matrix.col_insert(matrix.shape[1], sym.Matrix(this_column)) #columns are added one at a time
         # print(matrix,matrix.shape)
     return matrix
 def constant_term(polynomial,variable):
-    if len(variable.free_symbols) > 1:
-        return polynomial.coeff(variable) #when there are multi variables, coeff(variable,0) acts weirdly
-    else: #only one variable
-        return polynomial.coeff(variable,0)
+    for symbol in polynomial.free_symbols:
+        if symbol in variable:
+            polynomial = polynomial.subs(symbol,0)
+    return polynomial
 
 def substitution(polynomial=sym.expand(((2*x+y)**3)*(x*y**2)*z**4), relation_dict={x**2:y*a, y**3:(x**2)*b, z**4:y*x}):
     while need_substitute(polynomial, relation_dict):
