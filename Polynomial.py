@@ -31,7 +31,7 @@ def build_matrix(polynomial,variable,relation_dict): #variables that are not in 
     for basis in basis_list:
         this_column_polynomial = polynomial*basis
         this_column=[]
-        for basis in basis_list:
+        for basis in list(reversed(basis_list)):
             this_column_polynomial = substitution(sym.expand(this_column_polynomial),relation_dict)
             print(this_column_polynomial)
             # print(polynomial,basis==1,isinstance(polynomial, sym.symbol.Symbol))
@@ -42,9 +42,11 @@ def build_matrix(polynomial,variable,relation_dict): #variables that are not in 
                 coefficient = constant_term(this_column_polynomial,variable)
             else:
                 coefficient = this_column_polynomial.coeff(basis)
+                this_column_polynomial = this_column_polynomial-coefficient*basis
             print(basis,coefficient)
             this_column.append(coefficient)
             # print(this_column)
+        this_column = list(reversed(this_column))
         matrix = matrix.col_insert(matrix.shape[1], sym.Matrix(this_column)) #columns are added one at a time
         # print(matrix,matrix.shape)
     return matrix
