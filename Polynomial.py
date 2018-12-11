@@ -8,42 +8,38 @@ a = sym.symbols('a', integer=True)
 y = sym.symbols('y')
 b = sym.symbols('b', integer=True)
 z = sym.symbols('z')
-polynomial = ((2*x+y)**3)*(x*y**2)*z**4
-print('polynomial is', polynomial)
-polynomial = sym.expand(polynomial)
-print('After expansion, the polynomial is', polynomial)
+# polynomial = ((2*x+y)**3)*(x*y**2)*z**4
+# print('polynomial is', polynomial)
+# polynomial = sym.expand(polynomial)
+# print('After expansion, the polynomial is', polynomial)
 
+#can use sym.factor(poly)
 
 def build_matrix(polynomial,variable,relation_dict): #variables that are not in the base ring
     matrix = sym.Matrix()
     basis_list=[1]
     dict_for_basis = dict()
     for var in variable:
-        print('var',var)
+        # print('var',var)
         for relation in relation_dict:
-            print('relation',relation)
+            # print('relation',relation)
             if relation.free_symbols == var.free_symbols:
                 dict_for_basis.update({relation:relation_dict[relation]})
-    print(dict_for_basis)
+    # print(dict_for_basis)
     if len(dict_for_basis) != 0:
         basis_list = find_basis(dict_for_basis)
-    print(basis_list)
+    print('list of basis is: ',basis_list)
     for basis in basis_list:
         this_column_polynomial = polynomial*basis
         this_column=[]
         for basis in list(reversed(basis_list)):
             this_column_polynomial = substitution(sym.expand(this_column_polynomial),relation_dict)
-            print(this_column_polynomial)
-            # print(polynomial,basis==1,isinstance(polynomial, sym.symbol.Symbol))
             if basis == 1:
-                # coefficient = this_column_polynomial.coeff(variable,0) #Need to figure out a way to check constant term
-                # coefficient = constant_term(this_column_polynomial,variable)
-                # coefficient = this_column_polynomial.coeff(a,0)
                 coefficient = constant_term(this_column_polynomial,variable)
             else:
                 coefficient = this_column_polynomial.coeff(basis)
                 this_column_polynomial = this_column_polynomial-coefficient*basis
-            print(basis,coefficient)
+            # print(basis,coefficient)
             this_column.append(coefficient)
             # print(this_column)
         this_column = list(reversed(this_column))
@@ -55,6 +51,36 @@ def constant_term(polynomial,variable):
         if symbol in variable:
             polynomial = polynomial.subs(symbol,0)
     return polynomial
+
+
+def find_char_poly(matrix):
+    λ = sym.symbols('λ')
+    size = matrix.shape[0]
+    M = λ*sym.eye(size) - matrix
+    char_poly = sym.expand(M.det())
+    return char_poly
+
+def find_all_coeff_lambda(char_poly):
+    λ = sym.symbols('λ')
+    char_poly = sym.Poly(char_poly, sym.symbols('λ'))
+    list_of_coeffs = char_poly.all_coeffs()
+    coeff_dict = dict()
+    for i in range(len(list_of_coeffs)-1,-1,-1): #len(list_of_coeffs)-1 = λ's highest_degree, second -1 loop i to 0
+        coeff_dict[λ**i] = list_of_coeffs[len(list_of_coeffs)-1-i]
+    return coeff_dict
+def find_coeff_lambda_n_k(char_poly, k):
+    λ = sym.symbols('λ')
+    char_poly = sym.Poly(char_poly, sym.symbols('λ'))
+    list_of_coeffs = char_poly.all_coeffs()
+    coeff_dict = find_all_coeff_lambda(char_poly)
+    n = len(list_of_coeffs) - 1 #highest_degree of λ
+    coeff = coeff_dict[λ**(n-k)]
+    return coeff #value returned is the coefficient of λ**(n-k)
+def find_s(char_poly,k):
+    # find coeff of λ**(n-k)*(-1)**k
+    #return s_k, i.e. s_0 will always be 1
+    λ_coeff = find_coeff_lambda_n_k(char_poly, k)
+    return λ_coeff*(-1)**k
 
 def substitution(polynomial=sym.expand(((2*x+y)**3)*(x*y**2)*z**4), relation_dict={x**2:y*a, y**3:(x**2)*b, z**4:y*x}):
     while need_substitute(polynomial, relation_dict):
@@ -154,38 +180,3 @@ def is_factor(monomial_1, monomial_2):
         if not sym.degree(monomial_1, gen=symbol) <= sym.degree(monomial_2, gen=symbol): #if any symbol has a degree larger than its degree in the monomial_2
             return False
     return True
-    
-#helper method that was used in find_basis
-# def extract_variables(relation_dict):
-#     #extract variables from relation_dict
-#     monomials = []
-#     for key in relation_dict:
-#         monomials.append(key)
-#     # print(monomials)
-#     return monomials
-
-
-#helper method that was used in substitution
-# def replace(polynomial, relation_dict):
-#     for monomial in relation_dict:
-#         symbol_set = monomial.free_symbols
-#         symbol = list(symbol_set)[0]
-
-#         replace_degree = sym.degree(monomial, gen=symbol) #the degree of this variable in the relation_dict
-#         symbol_polynomial_degree = sym.degree(polynomial, gen=symbol) #the degree of this variable in the polynomial
-#         replace = [(symbol**i,relation_dict[monomial]*symbol**(i-replace_degree)) for i in range(symbol_polynomial_degree+1) if i >= replace_degree]
-
-#         polynomial = polynomial.subs(replace)
-#     return polynomial
-# [(x**i*y**j,z*x**(i-1)*y**(j-1)) for i in range(10) if i >=1 for j in range(10) if j >=1]
-# Turn this to be more general
-# Or try to separate the polynomial into terms, for each term, substitute
-
-
-# while sym.degree(polynomial, gen=x) >= 2 or \
-#         sym.degree(polynomial, gen=y) >= 3 or \
-#         sym.degree(polynomial, gen=z) >=4:
-#     polynomial = polynomial.subs([(x**i, y*a*x**(i-2)) for i in range(sym.degree(polynomial, gen=x)+1) if i >= 2])
-#     polynomial = polynomial.subs([(y**i, (x**2)*b*y**(i-3)) for i in range(sym.degree(polynomial, gen=y)+1) if i >= 3])
-#     polynomial = polynomial.subs([(z**i, y*x*z**(i-4)) for i in range(sym.degree(polynomial, gen=z)+1) if i >= 4])
-# print('check answer', polynomial)
